@@ -17,7 +17,7 @@ impl Default for OrbitCamera {
             focus: Vec3::ZERO,
             distance: 10.0,
             yaw: 0.0,
-            pitch: 0.3,
+            pitch: -0.3,
             sensitivity: 0.003,
             zoom_speed: 0.5,
         }
