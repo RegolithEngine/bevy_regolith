@@ -29,9 +29,16 @@ fn setup(
             clear_color: ClearColorConfig::Custom(Color::srgb(0.1, 0.1, 0.15)),
             ..default()
         },
-        Transform::from_xyz(0.0, 5.0, 10.0)
+        Transform::from_xyz(0.0, 0.0, 0.0)
             .looking_at(Vec3::ZERO, Vec3::Y),
-        OrbitCamera::default(),
+        OrbitCamera {
+            focus: Vec3::new(0.0, 0.0, 0.0),  // Focus point above ground
+            distance: 10.0,
+            yaw: 0.0,
+            pitch: -0.8,  // Higher pitch angle to look down from above
+            sensitivity: 0.003,
+            zoom_speed: 0.5,
+        },
         bevy::core_pipeline::tonemapping::Tonemapping::TonyMcMapface,
     ));
     
