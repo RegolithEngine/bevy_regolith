@@ -37,12 +37,23 @@ pub fn orbit_camera_system(
         return;
     };
     
-    // Mouse drag to rotate
-    if mouse_button.pressed(MouseButton::Right) {
+    // Left mouse button to rotate view (change angle)
+    if mouse_button.pressed(MouseButton::Left) {
         for motion in mouse_motion.read() {
             orbit.yaw -= motion.delta.x * orbit.sensitivity;
             orbit.pitch -= motion.delta.y * orbit.sensitivity;
             orbit.pitch = orbit.pitch.clamp(-1.5, 1.5);
+        }
+    }
+    // Right mouse button to pan (change focus point)
+    else if mouse_button.pressed(MouseButton::Right) {
+        for motion in mouse_motion.read() {
+            let pan_speed = orbit.distance * 0.001;
+            let rotation = Quat::from_euler(EulerRot::YXZ, orbit.yaw, orbit.pitch, 0.0);
+            let right = rotation * Vec3::X;
+            let up = rotation * Vec3::Y;
+            orbit.focus -= right * motion.delta.x * pan_speed;
+            orbit.focus += up * motion.delta.y * pan_speed;
         }
     } else {
         mouse_motion.clear();
