@@ -1,4 +1,5 @@
 use bevy::prelude::*;
+use bevy::diagnostic::{DiagnosticsStore, FrameTimeDiagnosticsPlugin};
 use bevy_egui::{egui, EguiContexts};
 use crate::solver::SolverConfig;
 use crate::particle::ActiveParticle;
@@ -21,6 +22,7 @@ pub fn update_ui(
     particle_count: Query<&ActiveParticle>,
     mut commands: Commands,
     mut ground_plane_color: Option<ResMut<GroundPlaneColor>>,
+    diagnostics: Res<DiagnosticsStore>,
 ) {
     // Try to get ground plane color if it exists (for examples that have it)
     let mut ground_color_rgb: Option<[f32; 3]> = ground_plane_color.as_ref().map(|c| {
@@ -87,4 +89,37 @@ pub fn update_ui(
         ui.label("• WASD: Pan camera");
         ui.label("• Q/E: Move camera up/down");
     });
+    
+    // FPS counter in upper right corner
+    egui::Window::new("FPS")
+        .fixed_pos(egui::pos2(
+            contexts.ctx_mut().screen_rect().width() - 120.0,
+            10.0
+        ))
+        .resizable(false)
+        .collapsible(false)
+        .title_bar(false)
+        .show(contexts.ctx_mut(), |ui| {
+            if let Some(fps_diagnostic) = diagnostics.get(&FrameTimeDiagnosticsPlugin::FPS) {
+                if let Some(fps_value) = fps_diagnostic.smoothed() {
+                    ui.label(
+                        egui::RichText::new(format!("FPS: {:.0}", fps_value))
+                            .size(20.0)
+                            .color(egui::Color32::from_rgb(100, 255, 100))
+                    );
+                } else {
+                    ui.label(
+                        egui::RichText::new("FPS: --")
+                            .size(20.0)
+                            .color(egui::Color32::from_rgb(100, 255, 100))
+                    );
+                }
+            } else {
+                ui.label(
+                    egui::RichText::new("FPS: --")
+                        .size(20.0)
+                        .color(egui::Color32::from_rgb(100, 255, 100))
+                );
+            }
+        });
 }

@@ -18,6 +18,7 @@
 //! ```
 
 use bevy::prelude::*;
+use bevy::diagnostic::FrameTimeDiagnosticsPlugin;
 use bevy_egui::EguiPlugin;
 
 pub mod particle;
@@ -47,6 +48,9 @@ pub struct RegolithPlugin;
 impl Plugin for RegolithPlugin {
     fn build(&self, app: &mut App) {
         app
+            // Add diagnostics plugin for FPS counter
+            .add_plugins(FrameTimeDiagnosticsPlugin::default())
+            
             // Add egui plugin for UI
             .add_plugins(EguiPlugin {
                 enable_multipass_for_primary_context: false,
