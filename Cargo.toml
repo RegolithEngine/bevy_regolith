@@ -21,6 +21,7 @@ bevy = { version = "0.16.1", default-features = false, features = [
     "bevy_text",
     "bevy_ui",
     "bevy_gizmos",  # Add gizmos support
+    "tonemapping_luts",  # Required for PBR rendering
     "x11",  # Linux window support
 ] }
 
