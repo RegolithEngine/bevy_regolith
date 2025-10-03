@@ -7,7 +7,7 @@ use rand::Rng;
 pub fn handle_spawn_input(
     mut commands: Commands,
     keyboard: Res<ButtonInput<KeyCode>>,
-    materials: Res<MaterialRegistry>,
+    _materials: Res<MaterialRegistry>,
 ) {
     if keyboard.just_pressed(KeyCode::Space) {
         spawn_particle_cluster(&mut commands, Vec3::new(0.0, 5.0, 0.0), 0, 100);
@@ -48,7 +48,7 @@ pub fn spawn_particle_cluster(
 /// System: Setup initial particles
 pub fn setup_initial_particles(
     mut commands: Commands,
-    materials: Res<MaterialRegistry>,
+    _materials: Res<MaterialRegistry>,
 ) {
     // Spawn a pile of particles
     for x in -5..5 {

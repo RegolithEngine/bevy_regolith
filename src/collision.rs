@@ -14,7 +14,7 @@ pub fn solve_constraints(
         &ParticleMaterial,
     )>,
     spatial_hash: Res<SpatialHash>,
-    materials: Res<MaterialRegistry>,
+    _materials: Res<MaterialRegistry>,
     config: Res<SolverConfig>,
 ) {
     // Iterate constraint solver
@@ -23,7 +23,7 @@ pub fn solve_constraints(
         let mut position_updates: Vec<(Entity, Vec3)> = Vec::new();
         
         // Particle-particle collisions
-        for (entity, pos, radius, mass, mat_id) in particles.iter() {
+        for (entity, pos, radius, mass, _mat_id) in particles.iter() {
             let neighbors = spatial_hash.query_neighbors(pos.0, radius.0 * 3.0);
             let mut correction = Vec3::ZERO;
             
@@ -62,7 +62,7 @@ pub fn solve_constraints(
         }
         
         // Ground plane collision
-        for (_, mut pos, radius, _, mat_id) in particles.iter_mut() {
+        for (_, mut pos, radius, _, _mat_id) in particles.iter_mut() {
             if pos.0.y < radius.0 {
                 pos.0.y = radius.0;
             }
