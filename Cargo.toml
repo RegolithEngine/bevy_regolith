@@ -1,0 +1,52 @@
+[package]
+name = "bevy_regolith"
+version = "0.1.0"
+edition = "2021"
+authors = ["Kyle Matthew Johnson <wilelabs@gmail.com>"]
+license = "MIT OR Apache-2.0"
+description = "Bevy plugin for granular physics simulation using Position-Based Dynamics"
+repository = "https://github.com/yourusername/bevy_regolith"
+keywords = ["bevy", "physics", "particles", "granular", "pbd"]
+categories = ["game-engines", "simulation"]
+
+[dependencies]
+# Bevy 0.16.1 (better ecosystem support)
+bevy = { version = "0.16.1", default-features = false, features = [
+    "bevy_asset",
+    "bevy_winit",
+    "bevy_core_pipeline",
+    "bevy_pbr",
+    "bevy_render",
+    "bevy_sprite",
+    "bevy_text",
+    "bevy_ui",
+    "bevy_gizmos",  # Add gizmos support
+    "x11",  # Linux window support
+] }
+
+# Math and utilities
+glam = "0.27"
+
+# UI for parameter tuning
+bevy_egui = "0.34"
+
+# Random number generation for particle spawning
+rand = "0.8"
+
+[dev-dependencies]
+# For profiling
+bevy_framepace = "0.18"
+
+[[example]]
+name = "basic"
+path = "examples/basic.rs"
+
+[profile.dev]
+opt-level = 1  # Better performance in dev mode
+
+[profile.dev.package."*"]
+opt-level = 3  # Optimize dependencies
+
+[profile.release]
+lto = "thin"
+codegen-units = 1
