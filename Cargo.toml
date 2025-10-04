@@ -34,13 +34,26 @@ bevy_egui = "0.34"
 # Random number generation for particle spawning
 rand = "0.8"
 
+# Optional dependencies (not included by default)
+# bevy_rapier3d 0.31 is compatible with Bevy 0.16
+bevy_rapier3d = { version = "0.31", optional = true }
+
 [dev-dependencies]
 # For profiling
 bevy_framepace = "0.18"
 
+[features]
+# Feature flag to enable Rapier integration
+rapier = ["bevy_rapier3d"]
+
 [[example]]
 name = "basic"
 path = "examples/basic.rs"
+
+[[example]]
+name = "rapier_integration"
+path = "examples/rapier_integration.rs"
+required-features = ["rapier"]
 
 [profile.dev]
 opt-level = 1  # Better performance in dev mode
