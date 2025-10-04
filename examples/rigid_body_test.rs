@@ -118,6 +118,25 @@ fn setup(
         StaticObstacle,
     ));
     
+    // Static obstacle - Horizontal Cylinder (rotated 90 degrees)
+    let horizontal_rotation = Quat::from_rotation_z(std::f32::consts::FRAC_PI_2);
+    commands.spawn((
+        Mesh3d(meshes.add(Cylinder::new(0.5, 2.5))),
+        MeshMaterial3d(materials.add(StandardMaterial {
+            base_color: Color::srgb(0.7, 0.5, 0.3),
+            perceptual_roughness: 0.8,
+            metallic: 0.1,
+            ..default()
+        })),
+        RigidBodyBundle::static_cylinder(
+            Vec3::new(-1.0, 1.5, -2.0),
+            horizontal_rotation,
+            0.5,
+            2.5,
+        ),
+        StaticObstacle,
+    ));
+    
     // Static obstacle - Ramp
     let ramp_rotation = Quat::from_rotation_x(-0.3);
     commands.spawn((
@@ -143,7 +162,7 @@ fn setup(
     
     println!("=== Rigid Body Test ===");
     println!("Rigid body collision detection is now active!");
-    println!("Particles will collide with the box, cylinder, and ramp.");
+    println!("Particles will collide with the box, vertical cylinder, horizontal cylinder, and ramp.");
     println!("Press Space to spawn 100 particles, R to spawn 500 particles.");
     println!("Press C to reset all particles.");
 }
