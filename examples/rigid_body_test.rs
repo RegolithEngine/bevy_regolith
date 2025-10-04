@@ -109,7 +109,7 @@ fn setup(
             ..default()
         })),
         RigidBodyBundle::static_cylinder(
-            Vec3::new(3.0, 1.0, 0.0),
+            Vec3::new(1.0, 1.0, 0.0),
             Quat::IDENTITY,
             0.8,
             2.0,
@@ -128,7 +128,7 @@ fn setup(
             ..default()
         })),
         RigidBodyBundle::static_box(
-            Vec3::new(0.0, 2.0, -3.0),
+            Vec3::new(0.0, 2.0, -1.0),
             ramp_rotation,
             3.0,
             0.2,
