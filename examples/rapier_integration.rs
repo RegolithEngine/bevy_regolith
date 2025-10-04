@@ -170,7 +170,7 @@ fn setup(
         })),
         RapierRigidBody::Fixed,
         Collider::cuboid(2.0, 0.1, 1.5),
-        Transform::from_xyz(0.0, 1.5, -1.5).with_rotation(ramp_rotation),
+        Transform::from_xyz(0.0, 2.5, -1.5).with_rotation(ramp_rotation),
         SyncToRegolith,
     ));
     

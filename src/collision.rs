@@ -14,6 +14,7 @@ pub fn solve_constraints(
         &ParticleRadius,
         &ParticleMass,
         &ParticleMaterial,
+        &ParticleSleepState,
     )>,
     rigid_bodies: Query<(&Transform, &CollisionShape, &RigidBody)>,
     spatial_hash: Res<SpatialHash>,
@@ -26,7 +27,12 @@ pub fn solve_constraints(
         let mut position_updates: Vec<(Entity, Vec3)> = Vec::new();
         
         // Particle-particle collisions
-        for (entity, pos, _prev_pos, radius, mass, _mat_id) in particles.iter() {
+        for (entity, pos, _prev_pos, radius, mass, _mat_id, sleep_state) in particles.iter() {
+            // Skip sleeping particles
+            if config.enable_sleeping && sleep_state.is_sleeping {
+                continue;
+            }
+            
             let neighbors = spatial_hash.query_neighbors(pos.0, radius.0 * 3.0);
             let mut correction = Vec3::ZERO;
             
@@ -35,7 +41,7 @@ pub fn solve_constraints(
                     continue;
                 }
                 
-                if let Ok((_, neighbor_pos, _, neighbor_radius, neighbor_mass, _)) =
+                if let Ok((_, neighbor_pos, _, neighbor_radius, neighbor_mass, _, _)) =
                     particles.get(neighbor_entity)
                 {
                     let delta = neighbor_pos.0 - pos.0;
@@ -59,13 +65,18 @@ pub fn solve_constraints(
         
         // Apply position updates
         for (entity, correction) in position_updates {
-            if let Ok((_, mut pos, _, _, _, _)) = particles.get_mut(entity) {
+            if let Ok((_, mut pos, _, _, _, _, _)) = particles.get_mut(entity) {
                 pos.0 += correction;
             }
         }
         
         // Ground plane collision
-        for (_, mut pos, _prev_pos, radius, _, _mat_id) in particles.iter_mut() {
+        for (_, mut pos, _prev_pos, radius, _, _mat_id, sleep_state) in particles.iter_mut() {
+            // Skip sleeping particles
+            if config.enable_sleeping && sleep_state.is_sleeping {
+                continue;
+            }
+            
             if pos.0.y < radius.0 {
                 pos.0.y = radius.0;
             }
@@ -75,7 +86,12 @@ pub fn solve_constraints(
         let rb_count = rigid_bodies.iter().count();
         static mut COLLISION_DEBUG_PRINTED: bool = false;
         
-        for (_, mut pos, prev_pos, radius, _, _) in particles.iter_mut() {
+        for (_, mut pos, prev_pos, radius, _, _, sleep_state) in particles.iter_mut() {
+            // Skip sleeping particles
+            if config.enable_sleeping && sleep_state.is_sleeping {
+                continue;
+            }
+            
             for (rb_transform, shape, _rb) in rigid_bodies.iter() {
                 // Swept collision detection: check trajectory from previous to current position
                 let ray_start = prev_pos.0;

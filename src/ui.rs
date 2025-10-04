@@ -2,7 +2,7 @@ use bevy::prelude::*;
 use bevy::diagnostic::{DiagnosticsStore, FrameTimeDiagnosticsPlugin};
 use bevy_egui::{egui, EguiContexts};
 use crate::solver::SolverConfig;
-use crate::particle::ActiveParticle;
+use crate::particle::{ActiveParticle, ParticleSleepState};
 use crate::spawner::spawn_particle_cluster;
 
 /// Event to trigger particle reset
@@ -24,6 +24,7 @@ pub fn update_ui(
     mut contexts: EguiContexts,
     mut config: ResMut<SolverConfig>,
     particle_count: Query<&ActiveParticle>,
+    sleeping_particles: Query<&ParticleSleepState>,
     mut commands: Commands,
     mut ground_plane_color: Option<ResMut<GroundPlaneColor>>,
     diagnostics: Res<DiagnosticsStore>,
@@ -53,6 +54,35 @@ pub fn update_ui(
         ui.checkbox(&mut config.enable_collisions, "Enable Collisions");
         ui.checkbox(&mut config.debug_draw_grid, "Debug: Draw Grid");
         ui.checkbox(&mut config.debug_draw_velocities, "Debug: Draw Velocities");
+        
+        ui.separator();
+        
+        ui.heading("Particle Sleeping");
+        ui.checkbox(&mut config.enable_sleeping, "Enable Sleeping");
+        
+        if config.enable_sleeping {
+            ui.add(egui::Slider::new(&mut config.sleep_velocity_threshold, 0.001..=0.1)
+                .text("Sleep Velocity Threshold"));
+            
+            ui.add(egui::Slider::new(&mut config.sleep_frame_threshold, 10..=120)
+                .text("Sleep Frame Threshold"));
+            
+            ui.add(egui::Slider::new(&mut config.wake_distance_multiplier, 1.0..=5.0)
+                .text("Wake Distance Multiplier"));
+            
+            // Count sleeping particles
+            let total_particles = sleeping_particles.iter().count();
+            let sleeping_count = sleeping_particles.iter().filter(|s| s.is_sleeping).count();
+            let awake_count = total_particles - sleeping_count;
+            
+            ui.separator();
+            ui.label(format!("Awake: {} | Sleeping: {}", awake_count, sleeping_count));
+            
+            if total_particles > 0 {
+                let sleep_percentage = (sleeping_count as f32 / total_particles as f32) * 100.0;
+                ui.label(format!("Sleep Ratio: {:.1}%", sleep_percentage));
+            }
+        }
         
         ui.separator();
         
