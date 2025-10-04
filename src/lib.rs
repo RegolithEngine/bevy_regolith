@@ -33,6 +33,9 @@ pub mod camera;
 pub mod ui;
 pub mod debug;
 
+#[cfg(feature = "rapier")]
+pub mod rapier_integration;
+
 /// Prelude module for convenient imports
 pub mod prelude {
     pub use crate::particle::*;
@@ -42,6 +45,9 @@ pub mod prelude {
     pub use crate::rigid_body::*;
     pub use crate::camera::*;
     pub use crate::RegolithPlugin;
+    
+    #[cfg(feature = "rapier")]
+    pub use crate::rapier_integration::*;
 }
 
 /// Main plugin for the Regolith granular physics system

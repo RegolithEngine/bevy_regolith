@@ -21,7 +21,6 @@ use bevy_rapier3d::prelude::{
     RapierDebugRenderPlugin, RapierPhysicsPlugin, Restitution, RigidBody as RapierRigidBody,
     Velocity,
 };
-use std::collections::HashMap;
 
 fn main() {
     App::new()
@@ -36,20 +35,12 @@ fn main() {
         .add_plugins(RegolithPlugin)
         .add_plugins(RapierPhysicsPlugin::<NoUserData>::default())
         .add_plugins(RapierDebugRenderPlugin::default())
-        .insert_resource(ParticleForceAccumulator::default())
+        .add_plugins(RapierIntegrationPlugin::default())
         .add_systems(Startup, setup)
         .add_systems(Update, (
-            sync_rapier_to_regolith,
             spawn_particles_input,
             clear_particles_input,
             despawn_out_of_bounds_particles,
-        ))
-        .add_systems(FixedUpdate, (
-            calculate_particle_forces
-                .before(bevy_regolith::solver::predict_positions),
-            apply_particle_forces
-                .after(calculate_particle_forces)
-                .before(bevy_rapier3d::plugin::PhysicsSet::StepSimulation),
         ))
         .run();
 }
@@ -195,202 +186,6 @@ fn setup(
     println!("  Space: Spawn 100 particles");
     println!("  R: Spawn 500 particles");
     println!("  C: Clear all particles");
-}
-
-/// Marker component for Rapier-controlled rigid bodies that need syncing
-#[derive(Component)]
-struct SyncToRegolith;
-
-/// Accumulates forces and torques from particle collisions before applying to Rapier
-#[derive(Resource, Default)]
-struct ParticleForceAccumulator {
-    /// Forces to apply to rigid body centers of mass
-    forces: HashMap<Entity, Vec3>,
-    
-    /// Torques to apply to rigid bodies
-    torques: HashMap<Entity, Vec3>,
-    
-    /// Number of particle contacts per body (for debugging)
-    contact_counts: HashMap<Entity, usize>,
-}
-
-impl ParticleForceAccumulator {
-    fn clear(&mut self) {
-        self.forces.clear();
-        self.torques.clear();
-        self.contact_counts.clear();
-    }
-    
-    fn add_force(&mut self, entity: Entity, force: Vec3, contact_point: Vec3, body_center: Vec3) {
-        *self.forces.entry(entity).or_default() += force;
-        
-        // Calculate torque from contact point
-        let r = contact_point - body_center;
-        let torque = r.cross(force);
-        *self.torques.entry(entity).or_default() += torque;
-        
-        *self.contact_counts.entry(entity).or_default() += 1;
-    }
-}
-
-/// Sync Rapier rigid body positions to regolith collision system
-/// This allows regolith particles to collide with Rapier bodies
-fn sync_rapier_to_regolith(
-    mut commands: Commands,
-    all_rapier_bodies: Query<(&Transform, &Collider), With<SyncToRegolith>>,
-    changed_rapier_bodies: Query<&Transform, (With<SyncToRegolith>, Changed<Transform>)>,
-    existing_rigid_bodies: Query<Entity, With<RigidBody>>,
-    mut initialized: Local<bool>,
-) {
-    // Initialize on first run or when any transform changes
-    let should_update = !*initialized || !changed_rapier_bodies.is_empty();
-    
-    if !should_update {
-        return;
-    }
-    
-    *initialized = true;
-    
-    // Remove old rigid body representations
-    for entity in existing_rigid_bodies.iter() {
-        commands.entity(entity).despawn();
-    }
-    
-    // Create new rigid body representations for regolith collision
-    for (transform, collider) in all_rapier_bodies.iter() {
-        // Convert Rapier collider to regolith collision shape
-        if let Some(cuboid) = collider.as_cuboid() {
-            let half_extents = cuboid.half_extents();
-            commands.spawn(RigidBodyBundle::static_box(
-                transform.translation,
-                transform.rotation,
-                half_extents.x * 2.0,
-                half_extents.y * 2.0,
-                half_extents.z * 2.0,
-            ));
-        } else if let Some(ball) = collider.as_ball() {
-            let radius = ball.radius();
-            commands.spawn(RigidBodyBundle::static_sphere(
-                transform.translation,
-                radius,
-            ));
-        }
-    }
-}
-
-/// Calculate forces from particle collisions with Rapier bodies
-fn calculate_particle_forces(
-    particles: Query<(&ParticlePosition, &ParticlePrevPosition, &ParticleRadius, &ParticleMass)>,
-    rapier_bodies: Query<(Entity, &Transform, &Collider, &RapierRigidBody, &Velocity), With<SyncToRegolith>>,
-    mut force_accumulator: ResMut<ParticleForceAccumulator>,
-    time: Res<Time>,
-) {
-    force_accumulator.clear();
-    
-    let dt = time.delta_secs();
-    if dt < 0.0001 {
-        return;
-    }
-    
-    for (particle_pos, particle_prev_pos, particle_radius, particle_mass) in particles.iter() {
-        // Calculate particle velocity
-        let particle_velocity = (particle_pos.0 - particle_prev_pos.0) / dt;
-        
-        for (rb_entity, rb_transform, collider, rb_type, rb_velocity) in rapier_bodies.iter() {
-            // Only apply forces to dynamic bodies
-            if !matches!(rb_type, RapierRigidBody::Dynamic) {
-                continue;
-            }
-            
-            // Simple collision detection - check if particle overlaps with collider
-            let world_to_local = rb_transform.compute_affine().inverse();
-            let local_pos = world_to_local.transform_point3(particle_pos.0);
-            
-            // Get closest point on collider
-            let closest_point = if let Some(cuboid) = collider.as_cuboid() {
-                let half_extents = cuboid.half_extents();
-                Vec3::new(
-                    local_pos.x.clamp(-half_extents.x, half_extents.x),
-                    local_pos.y.clamp(-half_extents.y, half_extents.y),
-                    local_pos.z.clamp(-half_extents.z, half_extents.z),
-                )
-            } else if let Some(ball) = collider.as_ball() {
-                let radius = ball.radius();
-                if local_pos.length() > 0.0001 {
-                    local_pos.normalize() * radius
-                } else {
-                    Vec3::ZERO
-                }
-            } else {
-                continue;
-            };
-            
-            let closest_world = rb_transform.transform_point(closest_point);
-            let delta = particle_pos.0 - closest_world;
-            let dist = delta.length();
-            
-            // Check if particle is colliding
-            if dist < particle_radius.0 && dist > 0.0001 {
-                let penetration = particle_radius.0 - dist;
-                let normal = delta / dist;
-                
-                // Calculate velocity of rigid body at contact point
-                let r = closest_world - rb_transform.translation;
-                let rb_velocity_at_contact = Vec3::from(rb_velocity.linvel) + Vec3::from(rb_velocity.angvel).cross(r);
-                
-                // Calculate relative velocity (particle relative to body at contact point)
-                let relative_velocity = particle_velocity - rb_velocity_at_contact;
-                
-                // Project relative velocity onto normal
-                let normal_velocity = relative_velocity.dot(normal);
-                
-                // Only apply force if particle and body are approaching each other
-                if normal_velocity < 0.0 {
-                    // Impulse-based force calculation
-                    // normal points from body surface toward particle
-                    // When particle hits body, body should be pushed AWAY from particle
-                    // So force on body is in -normal direction (opposite to relative approach)
-                    let impulse_magnitude = particle_mass.0 * normal_velocity.abs();
-                    let force = -normal * impulse_magnitude / dt;
-                    
-                    // Penetration correction force also pushes body away from particle
-                    // Tunable force scale parameters:
-                    const PENETRATION_FORCE_SCALE: f32 = 10.0;  // Adjust this (10-1000)
-                    const TOTAL_FORCE_SCALE: f32 = 5.0;         // Adjust this (1-100)
-                    
-                    let penetration_force = -normal * penetration * particle_mass.0 * PENETRATION_FORCE_SCALE;
-                    let total_force = (force + penetration_force) * TOTAL_FORCE_SCALE;
-                    
-                    // Apply force at contact point
-                    force_accumulator.add_force(
-                        rb_entity,
-                        total_force,
-                        closest_world,
-                        rb_transform.translation,
-                    );
-                }
-            }
-        }
-    }
-}
-
-/// Apply accumulated particle forces to Rapier rigid bodies
-fn apply_particle_forces(
-    force_accumulator: Res<ParticleForceAccumulator>,
-    mut external_forces: Query<&mut ExternalForce>,
-    all_dynamic_bodies: Query<Entity, With<RapierRigidBody>>,
-) {
-    for (entity, force) in force_accumulator.forces.iter() {
-        if let Ok(mut ext_force) = external_forces.get_mut(*entity) {
-            // Set the force (don't add, to avoid accumulation issues)
-            ext_force.force = *force;
-            
-            // Apply torque
-            if let Some(torque) = force_accumulator.torques.get(entity) {
-                ext_force.torque = *torque;
-            }
-        }
-    }
 }
 
 /// Spawn a pile of particles at a given position
