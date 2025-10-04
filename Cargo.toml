@@ -35,12 +35,7 @@ bevy_egui = "0.34"
 rand = "0.8"
 
 # Optional dependencies (not included by default)
-# bevy_rapier3d 0.31 is compatible with Bevy 0.16
 bevy_rapier3d = { version = "0.31", optional = true }
-
-[dev-dependencies]
-# For profiling
-bevy_framepace = "0.18"
 
 [features]
 # Feature flag to enable Rapier integration
@@ -54,6 +49,10 @@ path = "examples/basic.rs"
 name = "rapier_integration"
 path = "examples/rapier_integration.rs"
 required-features = ["rapier"]
+
+[[example]]
+name = "performance_benchmark"
+path = "examples/performance_benchmark.rs"
 
 [profile.dev]
 opt-level = 1  # Better performance in dev mode

@@ -1,14 +1,21 @@
 //! Interactive sandbox example with material switching
 //!
+//! This example demonstrates different particle materials with distinct colors and physics.
+//!
 //! Controls:
+//! - 1/2/3: Switch material (Lunar Regolith/Sand/Snow) - affects NEW particles only
 //! - Space: Spawn 100 particles with current material
 //! - R: Spawn 500 particles with current material
-//! - C: Reset all particles
-//! - 1/2/3: Switch material (Lunar Regolith/Sand/Snow)
+//! - C: Clear all particles and reset
 //! - Left Mouse: Rotate camera
 //! - Right Mouse: Pan camera
 //! - Mouse Wheel: Zoom
 //! - WASD/QE: Move camera
+//!
+//! Material Properties:
+//! - Lunar Regolith (1): Gray color, high friction, low bounce
+//! - Sand (2): Tan color, medium friction, low bounce
+//! - Snow (3): White color, low friction, very low bounce
 
 use bevy::prelude::*;
 use bevy_regolith::prelude::*;
@@ -86,6 +93,21 @@ fn setup(
     
     // Spawn initial pile of particles (lunar regolith)
     spawn_initial_pile(&mut commands, 0);
+    
+    println!("=== Sandbox Example ===");
+    println!("Material switching demo - each material has different color and physics!");
+    println!();
+    println!("Current Material: Lunar Regolith (gray)");
+    println!();
+    println!("Controls:");
+    println!("  1: Lunar Regolith (gray) - high friction");
+    println!("  2: Sand (tan) - medium friction");
+    println!("  3: Snow (white) - low friction");
+    println!("  Space: Spawn 100 particles");
+    println!("  R: Spawn 500 particles");
+    println!("  C: Clear all particles");
+    println!();
+    println!("TIP: Switch materials (1/2/3) then spawn (Space/R) to see different colors!");
 }
 
 /// Spawn an initial pile of particles
@@ -121,13 +143,16 @@ fn handle_material_switching(
 ) {
     if keyboard.just_pressed(KeyCode::Digit1) {
         current_material.0 = 0; // Lunar regolith
-        println!("Switched to Lunar Regolith");
+        println!("\n>>> Switched to Lunar Regolith (gray) - high friction, low bounce");
+        println!("    Spawn particles with Space or R to see the gray color!");
     } else if keyboard.just_pressed(KeyCode::Digit2) {
         current_material.0 = 1; // Sand
-        println!("Switched to Sand");
+        println!("\n>>> Switched to Sand (tan) - medium friction, low bounce");
+        println!("    Spawn particles with Space or R to see the tan color!");
     } else if keyboard.just_pressed(KeyCode::Digit3) {
         current_material.0 = 2; // Snow
-        println!("Switched to Snow");
+        println!("\n>>> Switched to Snow (white) - low friction, very low bounce");
+        println!("    Spawn particles with Space or R to see the white color!");
     }
 }
 
@@ -138,13 +163,25 @@ fn handle_sandbox_spawn_input(
     current_material: Res<CurrentMaterial>,
 ) {
     if keyboard.just_pressed(KeyCode::Space) {
+        let material_name = match current_material.0 {
+            0 => "Lunar Regolith (gray)",
+            1 => "Sand (tan)",
+            2 => "Snow (white)",
+            _ => "Unknown",
+        };
         spawn_particle_cluster(&mut commands, Vec3::new(0.0, 5.0, 0.0), current_material.0, 100);
-        println!("Spawned 100 particles");
+        println!("Spawned 100 {} particles", material_name);
     }
     
     if keyboard.just_pressed(KeyCode::KeyR) {
+        let material_name = match current_material.0 {
+            0 => "Lunar Regolith (gray)",
+            1 => "Sand (tan)",
+            2 => "Snow (white)",
+            _ => "Unknown",
+        };
         spawn_particle_cluster(&mut commands, Vec3::new(0.0, 8.0, 0.0), current_material.0, 500);
-        println!("Spawned 500 particles");
+        println!("Spawned 500 {} particles", material_name);
     }
 }
 

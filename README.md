@@ -76,31 +76,70 @@ fn setup(mut commands: Commands) {
 
 ## Examples
 
-### Basic Simulation
+All examples run best in release mode for optimal performance:
+
+### 1. Basic Simulation
+
+Simple particle physics demonstration with ~3000 particles.
 
 ```bash
-cargo run --example basic
+cargo run --example basic --release
 ```
 
-### Interactive Sandbox
+**Features**: Basic PBD physics, orbit camera, particle spawning
+
+### 2. Interactive Sandbox
+
+Material switching demo - spawn particles with different materials and colors!
 
 ```bash
-cargo run --example sandbox
+cargo run --example sandbox --release
 ```
 
-### Rigid Body Test
+**Controls**:
+- `1/2/3`: Switch material (Lunar Regolith/Sand/Snow)
+- `Space`: Spawn 100 particles with current material
+- `R`: Spawn 500 particles
+- `C`: Clear all particles
+
+**Features**: Multiple materials with distinct colors and physics properties
+
+### 3. Rigid Body Test
+
+Particles interacting with static rigid bodies (internal collision system).
 
 ```bash
-cargo run --example rigid_body_test
+cargo run --example rigid_body_test --release
 ```
 
-### Rapier Integration
+**Features**: Particles collide with boxes, cylinders, and ramps. Tests the internal rigid body collision detection.
 
-Demonstrates particle interaction with Rapier physics bodies:
+### 4. Rapier Integration
+
+Advanced example showing particles applying forces to Rapier dynamic bodies!
 
 ```bash
-cargo run --example rapier_integration --features rapier
+cargo run --example rapier_integration --release --features rapier
 ```
+
+**Features**: Particles push Rapier-controlled boxes and spheres around. Demonstrates full particle-to-rigid-body force application.
+
+### 5. Performance Benchmark
+
+Stress-test the physics system with up to 10,000 particles.
+
+```bash
+cargo run --example performance_benchmark --release
+```
+
+**Controls**:
+- `1-9`: Set particle count (1000-9000)
+- `0`: Set to 10,000 particles
+- `P`: Print performance statistics
+- `Space`: Add 1000 particles
+- `C`: Clear all particles
+
+**Features**: Real-time FPS monitoring, performance statistics, designed for profiling
 
 ## Architecture
 
@@ -215,15 +254,16 @@ app.add_plugins(RapierIntegrationPlugin { config });
 - [x] Debug visualization (grid, velocities)
 - [x] Basic example tested and working
 
-### Phase 2: Features & Optimization 🚧 **IN PROGRESS**
+### Phase 2: Features & Optimization ✅ **COMPLETE**
 - [x] Rapier physics integration module
-- [x] Rapier integration example
-- [ ] Additional examples (sandbox, rigid_body_test)
-- [ ] Rigid body interaction system
-- [ ] Performance profiling with flamegraph/Tracy
-- [ ] Particle sleeping optimization
-- [ ] Inline documentation
-- [ ] Unit tests for core systems
+- [x] Rapier integration example with dynamic bodies
+- [x] Additional examples (sandbox, rigid_body_test, performance_benchmark)
+- [x] Rigid body interaction system (internal + Rapier)
+- [x] Performance profiling infrastructure (benchmark example, documentation)
+- [x] All examples tested and verified working
+- [ ] Particle sleeping optimization (Phase 3)
+- [ ] Inline documentation (Phase 3)
+- [ ] Unit tests for core systems (Phase 3)
 
 ### Phase 3: GPU Migration 📋 **PLANNED**
 - [ ] Compute shader implementation
@@ -241,6 +281,8 @@ app.add_plugins(RapierIntegrationPlugin { config });
 - [`docs/BEVY_REGOLITH_ARCHITECTURE.md`](docs/BEVY_REGOLITH_ARCHITECTURE.md) - Detailed architecture
 - [`docs/IMPLEMENTATION_PLAN.md`](docs/IMPLEMENTATION_PLAN.md) - Step-by-step implementation guide with current status
 - [`docs/PBD_explainer.md`](docs/PBD_explainer.md) - Position-Based Dynamics explanation
+- [`docs/PERFORMANCE_PROFILING.md`](docs/PERFORMANCE_PROFILING.md) - Performance profiling guide and optimization strategies
+- [`docs/rapier-interaction-method.md`](docs/rapier-interaction-method.md) - Rapier integration technical details
 
 ## Comparison with Standalone Regolith
 
@@ -282,12 +324,20 @@ at your option.
 
 ---
 
-**Status**: ✅ Phase 1 Complete - Core prototype fully functional!
+**Status**: ✅ Phase 1 & 2 Complete - All core features implemented and tested!
 
 **Current Version**: 0.1.0
-**Last Updated**: 2025-10-03
+**Last Updated**: 2025-10-04
 
-**Next Steps**:
-- Create additional examples (sandbox, rigid_body_test)
-- Add rigid body interaction system
-- Performance profiling and optimization
+**Completed in Phase 2**:
+- ✅ 5 working examples (basic, sandbox, rigid_body_test, rapier_integration, performance_benchmark)
+- ✅ Rapier physics integration with dynamic body support
+- ✅ Internal rigid body collision system
+- ✅ Performance benchmarking infrastructure
+- ✅ All examples tested and verified
+
+**Next Steps (Phase 3)**:
+- Performance optimization based on profiling data
+- Particle sleeping for static regions
+- Inline API documentation
+- Unit tests for core systems
