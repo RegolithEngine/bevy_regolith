@@ -27,7 +27,10 @@ fn main() {
         }))
         .add_plugins(RegolithPlugin)
         .add_systems(Startup, setup)
-        .add_systems(Update, debug_rigid_bodies)
+        .add_systems(Update, (
+            debug_rigid_bodies,
+            despawn_out_of_bounds_particles,
+        ))
         .run();
 }
 
@@ -129,7 +132,7 @@ fn setup(
             ..default()
         })),
         RigidBodyBundle::static_cylinder(
-            Vec3::new(-1.0, 1.5, -2.0),
+            Vec3::new(0.0, 3.0, 0.0),
             horizontal_rotation,
             0.5,
             2.5,
@@ -212,6 +215,28 @@ fn debug_rigid_bodies(
                 println!("  - Shape: {:?} at position: {:?}", shape, transform.translation);
             }
             PRINTED = true;
+        }
+    }
+}
+
+/// Despawn particles that fall outside the ground plane boundaries
+fn despawn_out_of_bounds_particles(
+    mut commands: Commands,
+    particles: Query<(Entity, &ParticlePosition), With<ActiveParticle>>,
+) {
+    const GROUND_SIZE: f32 = 20.0;
+    const HALF_GROUND: f32 = GROUND_SIZE / 2.0;
+    const MIN_Y: f32 = -1.0; // Despawn if below ground
+    
+    for (entity, position) in particles.iter() {
+        let pos = position.0;
+        
+        // Check if particle is outside bounds
+        if pos.y < MIN_Y
+            || pos.x < -HALF_GROUND || pos.x > HALF_GROUND
+            || pos.z < -HALF_GROUND || pos.z > HALF_GROUND
+        {
+            commands.entity(entity).despawn();
         }
     }
 }
