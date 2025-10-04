@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 use std::collections::HashMap;
-use crate::particle::ParticlePosition;
+use crate::particle::{ParticlePosition, ParticleSleepState};
 
 /// Spatial hash grid for efficient neighbor queries
 #[derive(Resource)]
@@ -41,6 +41,27 @@ impl SpatialHash {
         for (entity, pos) in particles.iter() {
             let cell = self.world_to_cell(pos.0);
             self.grid.entry(cell).or_insert_with(Vec::new).push(entity);
+        }
+    }
+    
+    /// Clear and rebuild the spatial hash grid with a filter function
+    pub fn rebuild_with_filter<F, P>(
+        &mut self,
+        particles: &Query<(Entity, &ParticlePosition, &ParticleSleepState), F>,
+        predicate: P,
+    )
+    where
+        F: bevy::ecs::query::QueryFilter,
+        P: Fn(&ParticleSleepState) -> bool,
+    {
+        self.grid.clear();
+        
+        for (entity, pos, sleep_state) in particles.iter() {
+            // Only add particles that pass the filter
+            if predicate(sleep_state) {
+                let cell = self.world_to_cell(pos.0);
+                self.grid.entry(cell).or_insert_with(Vec::new).push(entity);
+            }
         }
     }
     

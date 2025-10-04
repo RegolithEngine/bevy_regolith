@@ -95,6 +95,8 @@ impl Plugin for RegolithPlugin {
                 collision::solve_constraints,
                 solver::update_velocities,
                 solver::apply_damping,
+                solver::detect_sleeping_particles,
+                solver::wake_sleeping_particles,
             ).chain())
             
             // Late update (after physics)

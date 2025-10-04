@@ -96,10 +96,10 @@ The following tasks are planned for Phase 2:
    - [x] Create performance benchmark example
    - [x] Add profiling infrastructure (Tracy, flamegraph)
    - [x] Document profiling methodology
+   - [x] Add particle sleeping for static regions
    - [ ] Profile with 5,000-10,000 particles
    - [ ] Identify bottlenecks in constraint solving
    - [ ] Optimize spatial hash queries
-   - [ ] Add particle sleeping for static regions
    - [ ] Implement parallel processing optimizations
 
 5. **Documentation & Testing**

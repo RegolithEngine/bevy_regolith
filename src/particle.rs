@@ -28,6 +28,24 @@ pub struct ParticleRadius(pub f32);
 #[derive(Component, Debug, Clone, Copy)]
 pub struct ActiveParticle;
 
+/// Particle sleep state tracking
+#[derive(Component, Debug, Clone, Copy)]
+pub struct ParticleSleepState {
+    /// Number of frames the particle has been nearly stationary
+    pub stationary_frames: u32,
+    /// Whether the particle is currently sleeping
+    pub is_sleeping: bool,
+}
+
+impl Default for ParticleSleepState {
+    fn default() -> Self {
+        Self {
+            stationary_frames: 0,
+            is_sleeping: false,
+        }
+    }
+}
+
 /// Bundle for spawning particles
 #[derive(Bundle)]
 pub struct ParticleBundle {
@@ -38,6 +56,7 @@ pub struct ParticleBundle {
     pub material: ParticleMaterial,
     pub radius: ParticleRadius,
     pub active: ActiveParticle,
+    pub sleep_state: ParticleSleepState,
 }
 
 impl ParticleBundle {
@@ -50,6 +69,7 @@ impl ParticleBundle {
             material: ParticleMaterial(material_id),
             radius: ParticleRadius(radius),
             active: ActiveParticle,
+            sleep_state: ParticleSleepState::default(),
         }
     }
 }
