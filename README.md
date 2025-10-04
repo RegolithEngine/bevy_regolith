@@ -104,7 +104,22 @@ cargo run --example sandbox --release
 
 **Features**: Multiple materials with distinct colors and physics properties
 
-### 3. Rigid Body Test
+### 3. Basin Stacking Demo
+
+Particles fall into a basin to demonstrate stacking behavior and collision interactions.
+
+```bash
+cargo run --example basin --release
+```
+
+**Controls**:
+- `Space`: Spawn 50 particles
+- `R`: Spawn 200 particles
+- `C`: Clear all particles
+
+**Features**: Sloped basin walls, particle stacking, collision with angled surfaces. Perfect for observing how particles settle and stack on top of each other.
+
+### 4. Rigid Body Test
 
 Particles interacting with static rigid bodies (internal collision system).
 
@@ -114,7 +129,7 @@ cargo run --example rigid_body_test --release
 
 **Features**: Particles collide with boxes, cylinders, and ramps. Tests the internal rigid body collision detection.
 
-### 4. Rapier Integration
+### 5. Rapier Integration
 
 Advanced example showing particles applying forces to Rapier dynamic bodies!
 
@@ -124,7 +139,7 @@ cargo run --example rapier_integration --release --features rapier
 
 **Features**: Particles push Rapier-controlled boxes and spheres around. Demonstrates full particle-to-rigid-body force application.
 
-### 5. Performance Benchmark
+### 6. Performance Benchmark
 
 Stress-test the physics system with up to 10,000 particles.
 
@@ -330,7 +345,7 @@ at your option.
 **Last Updated**: 2025-10-04
 
 **Completed in Phase 2**:
-- ✅ 5 working examples (basic, sandbox, rigid_body_test, rapier_integration, performance_benchmark)
+- ✅ 6 working examples (basic, sandbox, basin, rigid_body_test, rapier_integration, performance_benchmark)
 - ✅ Rapier physics integration with dynamic body support
 - ✅ Internal rigid body collision system
 - ✅ Performance benchmarking infrastructure

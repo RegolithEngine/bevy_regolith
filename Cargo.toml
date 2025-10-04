@@ -54,6 +54,18 @@ required-features = ["rapier"]
 name = "performance_benchmark"
 path = "examples/performance_benchmark.rs"
 
+[[example]]
+name = "basin"
+path = "examples/basin.rs"
+
+[[example]]
+name = "sandbox"
+path = "examples/sandbox.rs"
+
+[[example]]
+name = "rigid_body_test"
+path = "examples/rigid_body_test.rs"
+
 [profile.dev]
 opt-level = 1  # Better performance in dev mode
 
