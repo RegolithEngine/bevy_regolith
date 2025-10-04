@@ -27,6 +27,7 @@ pub mod spawner;
 pub mod solver;
 pub mod spatial;
 pub mod collision;
+pub mod rigid_body;
 pub mod rendering;
 pub mod camera;
 pub mod ui;
@@ -38,6 +39,7 @@ pub mod prelude {
     pub use crate::material::*;
     pub use crate::spawner::*;
     pub use crate::solver::*;
+    pub use crate::rigid_body::*;
     pub use crate::camera::*;
     pub use crate::RegolithPlugin;
 }
