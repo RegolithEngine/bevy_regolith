@@ -127,6 +127,26 @@ fn setup(
         SyncToRegolith,
     ));
     
+    // Second dynamic Rapier box
+    commands.spawn((
+        Mesh3d(meshes.add(Cuboid::new(1.5, 1.5, 1.5))),
+        MeshMaterial3d(materials.add(StandardMaterial {
+            base_color: Color::srgb(0.8, 0.6, 0.2),
+            perceptual_roughness: 0.8,
+            metallic: 0.1,
+            ..default()
+        })),
+        RapierRigidBody::Dynamic,
+        Collider::cuboid(0.75, 0.75, 0.75),
+        ColliderMassProperties::Density(2.0),
+        Restitution::coefficient(0.3),
+        Friction::coefficient(0.5),
+        ExternalForce::default(),
+        Velocity::default(),
+        Transform::from_xyz(0.0, 1.0, -7.0),
+        SyncToRegolith,
+    ));
+    
     // Dynamic Rapier sphere
     commands.spawn((
         Mesh3d(meshes.add(Sphere::new(0.8))),
@@ -324,16 +344,6 @@ fn calculate_particle_forces(
                 // Project relative velocity onto normal
                 let normal_velocity = relative_velocity.dot(normal);
                 
-                // Debug: print collision info occasionally
-                static mut DEBUG_COUNTER: u32 = 0;
-                unsafe {
-                    DEBUG_COUNTER += 1;
-                    if DEBUG_COUNTER % 100 == 0 {
-                        println!("Collision detected: normal_vel={}, particle_vel={:?}, rb_vel={:?}",
-                            normal_velocity, particle_velocity, rb_velocity_at_contact);
-                    }
-                }
-                
                 // Only apply force if particle and body are approaching each other
                 if normal_velocity < 0.0 {
                     // Impulse-based force calculation
@@ -371,49 +381,13 @@ fn apply_particle_forces(
     all_dynamic_bodies: Query<Entity, With<RapierRigidBody>>,
 ) {
     for (entity, force) in force_accumulator.forces.iter() {
-        match external_forces.get_mut(*entity) {
-            Ok(mut ext_force) => {
-                // Set the force (don't add, to avoid accumulation issues)
-                ext_force.force = *force;
-                
-                // Apply torque
-                if let Some(torque) = force_accumulator.torques.get(entity) {
-                    ext_force.torque = *torque;
-                }
-                
-                println!("Applied force {:?} to entity {:?}", force, entity);
-            }
-            Err(_) => {
-                println!("ERROR: Could not apply force to entity {:?} - ExternalForce component missing!", entity);
-            }
-        }
-    }
-    
-    // Debug: List all dynamic bodies
-    static mut PRINTED_BODIES: bool = false;
-    unsafe {
-        if !PRINTED_BODIES {
-            println!("=== All Dynamic Bodies ===");
-            for entity in all_dynamic_bodies.iter() {
-                let has_ext_force = external_forces.get(entity).is_ok();
-                println!("  Entity {:?}: has ExternalForce = {}", entity, has_ext_force);
-            }
-            PRINTED_BODIES = true;
-        }
-    }
-    
-    // Debug output
-    if !force_accumulator.forces.is_empty() {
-        static mut PRINTED: bool = false;
-        unsafe {
-            if !PRINTED {
-                println!("=== Particle Forces Applied ===");
-                for (entity, force) in force_accumulator.forces.iter() {
-                    if let Some(count) = force_accumulator.contact_counts.get(entity) {
-                        println!("  Entity {:?}: {} contacts, force: {:?}", entity, count, force);
-                    }
-                }
-                PRINTED = true;
+        if let Ok(mut ext_force) = external_forces.get_mut(*entity) {
+            // Set the force (don't add, to avoid accumulation issues)
+            ext_force.force = *force;
+            
+            // Apply torque
+            if let Some(torque) = force_accumulator.torques.get(entity) {
+                ext_force.torque = *torque;
             }
         }
     }
