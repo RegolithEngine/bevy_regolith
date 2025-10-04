@@ -3,6 +3,7 @@
 //! Controls:
 //! - Space: Spawn 100 particles with current material
 //! - R: Spawn 500 particles with current material
+//! - C: Reset all particles
 //! - 1/2/3: Switch material (Lunar Regolith/Sand/Snow)
 //! - Left Mouse: Rotate camera
 //! - Right Mouse: Pan camera

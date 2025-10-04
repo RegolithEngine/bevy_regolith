@@ -5,6 +5,10 @@ use crate::solver::SolverConfig;
 use crate::particle::ActiveParticle;
 use crate::spawner::spawn_particle_cluster;
 
+/// Event to trigger particle reset
+#[derive(Event)]
+pub struct ResetParticlesEvent;
+
 /// Resource to store ground plane color (defined in examples)
 #[derive(Resource)]
 pub struct GroundPlaneColor(pub Color);
@@ -23,6 +27,7 @@ pub fn update_ui(
     mut commands: Commands,
     mut ground_plane_color: Option<ResMut<GroundPlaneColor>>,
     diagnostics: Res<DiagnosticsStore>,
+    mut reset_events: EventWriter<ResetParticlesEvent>,
 ) {
     // Try to get ground plane color if it exists (for examples that have it)
     let mut ground_color_rgb: Option<[f32; 3]> = ground_plane_color.as_ref().map(|c| {
@@ -81,9 +86,16 @@ pub fn update_ui(
         
         ui.separator();
         
+        if ui.button("Reset All Particles (C)").clicked() {
+            reset_events.write(ResetParticlesEvent);
+        }
+        
+        ui.separator();
+        
         ui.label("Controls:");
         ui.label("• Space: Spawn 100 particles");
         ui.label("• R: Spawn 500 particles");
+        ui.label("• C: Reset all particles");
         ui.label("• Right Mouse: Rotate camera");
         ui.label("• Mouse Wheel: Zoom");
         ui.label("• WASD: Pan camera");

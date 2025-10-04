@@ -6,6 +6,7 @@
 //! Controls:
 //! - Space: Spawn 100 particles
 //! - R: Spawn 500 particles
+//! - C: Reset all particles
 //! - Left Mouse: Rotate camera
 //! - Right Mouse: Pan camera
 //! - Mouse Wheel: Zoom
@@ -144,6 +145,7 @@ fn setup(
     println!("Rigid body collision detection is now active!");
     println!("Particles will collide with the box, cylinder, and ramp.");
     println!("Press Space to spawn 100 particles, R to spawn 500 particles.");
+    println!("Press C to reset all particles.");
 }
 
 /// Marker component for static obstacles

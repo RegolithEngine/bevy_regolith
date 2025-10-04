@@ -166,11 +166,28 @@ impl CollisionShape {
                     // Point is outside cylinder
                     let clamped_y = point.y.clamp(-*half_height, *half_height);
                     
-                    if xz_len > 0.0001 {
-                        let scale = *radius / xz_len;
-                        Vec3::new(point.x * scale, clamped_y, point.z * scale)
+                    // Check if we're outside the height range
+                    let outside_height = point.y.abs() > *half_height;
+                    
+                    if outside_height && xz_len <= *radius {
+                        // Above or below the cylinder but within radius - closest point is on the cap
+                        Vec3::new(point.x, clamped_y, point.z)
+                    } else if !outside_height && xz_len > *radius {
+                        // Within height range but outside radius - closest point is on the side
+                        if xz_len > 0.0001 {
+                            let scale = *radius / xz_len;
+                            Vec3::new(point.x * scale, point.y, point.z * scale)
+                        } else {
+                            Vec3::new(*radius, point.y, 0.0)
+                        }
                     } else {
-                        Vec3::new(*radius, clamped_y, 0.0)
+                        // Outside both height and radius - closest point is on the cap edge
+                        if xz_len > 0.0001 {
+                            let scale = *radius / xz_len;
+                            Vec3::new(point.x * scale, clamped_y, point.z * scale)
+                        } else {
+                            Vec3::new(*radius, clamped_y, 0.0)
+                        }
                     }
                 }
             }

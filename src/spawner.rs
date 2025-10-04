@@ -1,6 +1,7 @@
 use bevy::prelude::*;
 use crate::particle::*;
 use crate::material::MaterialRegistry;
+use crate::ui::ResetParticlesEvent;
 use rand::Rng;
 
 /// System: Spawn particles on key press
@@ -68,5 +69,30 @@ pub fn setup_initial_particles(
                 ));
             }
         }
+    }
+}
+
+/// System: Handle keyboard input for reset
+pub fn handle_reset_input(
+    keyboard: Res<ButtonInput<KeyCode>>,
+    mut reset_events: EventWriter<ResetParticlesEvent>,
+) {
+    if keyboard.just_pressed(KeyCode::KeyC) {
+        reset_events.write(ResetParticlesEvent);
+    }
+}
+
+/// System: Reset all particles
+pub fn reset_particles(
+    mut commands: Commands,
+    particles: Query<Entity, With<ActiveParticle>>,
+    mut reset_events: EventReader<ResetParticlesEvent>,
+) {
+    for _event in reset_events.read() {
+        let count = particles.iter().count();
+        for entity in particles.iter() {
+            commands.entity(entity).despawn();
+        }
+        println!("Reset: Removed {} particles", count);
     }
 }

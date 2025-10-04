@@ -58,6 +58,9 @@ impl Plugin for RegolithPlugin {
                 enable_multipass_for_primary_context: false,
             })
             
+            // Events
+            .add_event::<ui::ResetParticlesEvent>()
+            
             // Resources
             .init_resource::<solver::SolverConfig>()
             .init_resource::<material::MaterialRegistry>()
@@ -72,6 +75,8 @@ impl Plugin for RegolithPlugin {
             // Update systems (run every frame)
             .add_systems(Update, (
                 spawner::handle_spawn_input,
+                spawner::handle_reset_input,
+                spawner::reset_particles,
                 camera::orbit_camera_system,
                 rendering::setup_particle_rendering,
                 ui::update_ui,
