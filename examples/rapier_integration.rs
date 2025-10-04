@@ -154,7 +154,7 @@ fn setup(
         Friction::coefficient(0.3),
         ExternalForce::default(),
         Velocity::default(),
-        Transform::from_xyz(0.0, 1.0, -4.0),
+        Transform::from_xyz(0.0, 1.0, -0.0),
         SyncToRegolith,
     ));
     

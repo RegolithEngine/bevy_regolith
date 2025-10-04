@@ -11,6 +11,7 @@ A Bevy plugin for granular physics simulation using Position-Based Dynamics (PBD
 - 🎮 **CPU-Based PBD**: Position-Based Dynamics solver running on CPU for easy debugging
 - 🪨 **Granular Materials**: Lunar regolith, sand, snow presets
 - 🎯 **Rigid Body Interaction**: Test particle-rigid body coupling
+- 🤝 **Rapier Integration**: Built-in plugin for Rapier physics engine integration
 - 📊 **Debug Visualization**: Spatial grid, velocities, constraints
 - 🎨 **Interactive**: Runtime parameter tuning with UI
 - 🔧 **Bevy Native**: Full ECS integration with Bevy 0.16
@@ -93,6 +94,14 @@ cargo run --example sandbox
 cargo run --example rigid_body_test
 ```
 
+### Rapier Integration
+
+Demonstrates particle interaction with Rapier physics bodies:
+
+```bash
+cargo run --example rapier_integration --features rapier
+```
+
 ## Architecture
 
 ### Component Structure
@@ -137,6 +146,49 @@ Material::sand()
 Material::snow()
 ```
 
+### Rapier Integration
+
+Integrate with Rapier physics for particle-rigid body interaction:
+
+```rust
+use bevy::prelude::*;
+use bevy_regolith::prelude::*;
+use bevy_rapier3d::prelude::*;
+
+fn main() {
+    App::new()
+        .add_plugins(DefaultPlugins)
+        .add_plugins(RegolithPlugin)
+        .add_plugins(RapierPhysicsPlugin::<NoUserData>::default())
+        .add_plugins(RapierIntegrationPlugin::default())
+        .run();
+}
+
+fn setup(mut commands: Commands) {
+    // Spawn a dynamic Rapier body that particles can push
+    commands.spawn((
+        RigidBody::Dynamic,
+        Collider::cuboid(0.5, 0.5, 0.5),
+        ExternalForce::default(),
+        Transform::from_xyz(0.0, 2.0, 0.0),
+        SyncToRegolith, // Mark for particle interaction
+    ));
+}
+```
+
+**Configuration Options:**
+
+```rust
+// Customize force calculation parameters
+let config = RapierIntegrationConfig {
+    penetration_force_scale: 10.0,  // Adjust penetration correction
+    total_force_scale: 5.0,          // Overall force multiplier
+    restitution: 0.0,                // Bounciness (0 = no bounce)
+};
+
+app.add_plugins(RapierIntegrationPlugin { config });
+```
+
 ## Performance
 
 **Current Status (CPU):**
@@ -164,6 +216,8 @@ Material::snow()
 - [x] Basic example tested and working
 
 ### Phase 2: Features & Optimization 🚧 **IN PROGRESS**
+- [x] Rapier physics integration module
+- [x] Rapier integration example
 - [ ] Additional examples (sandbox, rigid_body_test)
 - [ ] Rigid body interaction system
 - [ ] Performance profiling with flamegraph/Tracy

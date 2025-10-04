@@ -53,32 +53,138 @@ All core systems have been implemented and tested successfully:
 
 The following tasks are planned for Phase 2:
 
-1. **Additional Examples**
+1. **Rapier Physics Integration** ✅ **COMPLETE**
+   - [x] Create `src/rapier_integration.rs` module
+   - [x] Implement `RapierIntegrationPlugin`
+   - [x] Add force accumulation system
+   - [x] Add configurable force parameters
+   - [x] Create Rapier integration example
+   - [x] Test particle-rigid body interaction
+
+2. **Additional Examples**
    - [ ] Sandbox example with material switching
    - [ ] Rigid body test example
 
-2. **Rigid Body Interaction**
-   - [ ] Implement rigid body components
-   - [ ] Add particle-rigid body collision detection
-   - [ ] Test with dynamic rigid bodies
+3. **Rigid Body Interaction**
+   - [x] Implement rigid body components
+   - [x] Add particle-rigid body collision detection
+   - [ ] Test with dynamic rigid bodies (internal system)
 
-3. **Performance Optimization**
+4. **Performance Optimization**
    - [ ] Profile with `cargo flamegraph` or Tracy
    - [ ] Identify bottlenecks in constraint solving
    - [ ] Optimize spatial hash queries
    - [ ] Add particle sleeping for static regions
 
-4. **Documentation & Testing**
+5. **Documentation & Testing**
    - [ ] Add inline documentation to all public APIs
    - [ ] Create more usage examples in README
    - [ ] Add unit tests for core physics systems
    - [ ] Document performance characteristics
 
-5. **GPU Migration Planning (Phase 3)**
+6. **GPU Migration Planning (Phase 3)**
    - [ ] Design compute shader architecture
    - [ ] Plan GPU buffer management strategy
    - [ ] Identify API surface to maintain
    - [ ] Reference standalone `regolith` engine design
+
+
+## Rapier Integration Module
+
+### Overview
+
+The Rapier integration module (`src/rapier_integration.rs`) provides seamless integration between bevy_regolith particles and Rapier rigid bodies, allowing particles to apply forces to Rapier-controlled objects.
+
+### Architecture
+
+**Key Components:**
+
+1. **`RapierIntegrationPlugin`** - Main plugin that sets up all systems
+2. **`RapierIntegrationConfig`** - Resource for configurable force parameters
+3. **`ParticleForceAccumulator`** - Resource for accumulating forces/torques before applying
+4. **`SyncToRegolith`** - Marker component for Rapier bodies that interact with particles
+
+**System Pipeline:**
+
+```
+Update:
+  - sync_rapier_to_regolith: Convert Rapier colliders to regolith collision shapes
+
+FixedUpdate:
+  - calculate_particle_forces: Detect collisions and compute forces
+    (runs before predict_positions)
+  - apply_particle_forces: Apply accumulated forces to Rapier ExternalForce
+    (runs before Rapier physics step)
+```
+
+### Usage Example
+
+```rust
+use bevy::prelude::*;
+use bevy_regolith::prelude::*;
+use bevy_rapier3d::prelude::*;
+
+fn main() {
+    App::new()
+        .add_plugins(DefaultPlugins)
+        .add_plugins(RegolithPlugin)
+        .add_plugins(RapierPhysicsPlugin::<NoUserData>::default())
+        .add_plugins(RapierIntegrationPlugin::default())
+        .run();
+}
+
+fn setup(mut commands: Commands) {
+    // Spawn a dynamic Rapier body
+    commands.spawn((
+        RigidBody::Dynamic,
+        Collider::cuboid(0.5, 0.5, 0.5),
+        ExternalForce::default(),
+        Transform::from_xyz(0.0, 2.0, 0.0),
+        SyncToRegolith, // Mark for particle interaction
+    ));
+}
+```
+
+### Configuration
+
+Force calculation can be tuned via `RapierIntegrationConfig`:
+
+```rust
+let config = RapierIntegrationConfig {
+    penetration_force_scale: 10.0,  // Penetration correction strength
+    total_force_scale: 5.0,          // Overall force multiplier
+    restitution: 0.0,                // Coefficient of restitution
+};
+
+app.add_plugins(RapierIntegrationPlugin { config });
+```
+
+### Implementation Details
+
+**Force Calculation:**
+- Uses impulse-based collision response
+- Calculates relative velocity at contact points
+- Applies penetration correction forces
+- Computes torques from contact point offsets
+- Only applies forces when particles approach bodies (normal_velocity < 0)
+
+**Collision Detection:**
+- Transforms particle positions to Rapier body local space
+- Finds closest point on collider surface
+- Checks if particle radius overlaps with surface
+- Supports cuboid and sphere colliders
+
+**Synchronization:**
+- Rapier bodies marked with `SyncToRegolith` are converted to regolith collision shapes
+- Updates when transforms change
+- Allows regolith particles to collide with Rapier bodies
+
+### Performance Considerations
+
+- Force accumulation uses HashMap for O(1) lookups
+- Only processes dynamic Rapier bodies
+- Collision detection is per-particle, per-body (O(n*m))
+- Consider spatial partitioning for large numbers of Rapier bodies
 
 ### 🎯 Success Criteria for Phase 2
 
