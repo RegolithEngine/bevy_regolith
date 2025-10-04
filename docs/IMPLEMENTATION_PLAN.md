@@ -4,11 +4,13 @@ This document provides a step-by-step implementation guide for building the `bev
 
 ## 🎉 Current Status: Phase 1 & 2 Complete!
 
-**Last Updated:** 2025-10-04
+**Last Updated:** 2025-01-04
 
-### ✅ Completed (Phase 1: Core Prototype)
+### ✅ Completed (Phase 1 & 2)
 
-All core systems have been implemented and tested successfully:
+All core systems and Phase 2 features have been implemented and tested successfully:
+
+#### Phase 1: Core Prototype
 
 - **Core Data Structures**
   - ✅ Particle components (position, velocity, mass, radius, material)
@@ -38,9 +40,28 @@ All core systems have been implemented and tested successfully:
   - ✅ Interactive UI with egui (parameter tuning, FPS counter)
   - ✅ Ground plane color picker
 
-- **Examples**
+#### Phase 2: Advanced Features
+
+- **Rapier Physics Integration** ✅
+  - ✅ Full bidirectional integration with Rapier rigid bodies
+  - ✅ Force accumulation and application system
+  - ✅ Configurable force parameters (penetration scale, restitution)
+  - ✅ `SyncToRegolith` marker component for selective interaction
+  - ✅ Support for cuboid and sphere colliders
+  - ✅ Rapier integration example demonstrating particle-rigid body interaction
+
+- **Rigid Body System** ✅
+  - ✅ Internal rigid body components and collision shapes
+  - ✅ Particle-rigid body collision detection
+  - ✅ Support for static and dynamic rigid bodies
+  - ✅ Rigid body test example
+
+- **Additional Examples** ✅
   - ✅ Basic example with ~3000 initial particles
-  - ✅ Full integration test (compiles and runs without warnings)
+  - ✅ Sandbox example with material switching
+  - ✅ Rigid body test example
+  - ✅ Rapier integration example
+  - ✅ Performance benchmark example
 
 ### 📊 Performance Metrics
 
@@ -65,10 +86,11 @@ The following tasks are planned for Phase 2:
    - [x] Sandbox example with material switching
    - [x] Rigid body test example
 
-3. **Rigid Body Interaction**
+3. **Rigid Body Interaction** ✅ **COMPLETE**
    - [x] Implement rigid body components
    - [x] Add particle-rigid body collision detection
-   - [ ] Test with dynamic rigid bodies (internal system)
+   - [x] Test with dynamic rigid bodies (internal system)
+   - [x] Test with Rapier rigid bodies
 
 4. **Performance Optimization** 🔄 **IN PROGRESS**
    - [x] Create performance benchmark example
